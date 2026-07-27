@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  nexus-ai-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexus_ai_agent_oci
+    ports:
+      - "8000:8000"
+    environment:
+      - OCI_REGION=sa-saopaulo-1
+      - OCI_BUCKET_NAME=alura-agentes-knowledge-bucket
+      - OCI_NAMESPACE=gr4v1ty_oci_namespace
+    restart: always
