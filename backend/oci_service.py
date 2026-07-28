@@ -6,8 +6,8 @@ logger = logging.getLogger("oci_service")
 
 class OCIService:
     """
-    Oracle Cloud Infrastructure (OCI) Integration Manager.
-    Provides support for OCI Object Storage, OCI Generative AI, and OCI Health Checks.
+    Gerenciador de Integração com a Nuvem Oracle Cloud Infrastructure (OCI).
+    Oferece suporte ao OCI Object Storage, OCI Generative AI e verificações de saúde na nuvem.
     """
     
     def __init__(self):
@@ -17,7 +17,7 @@ class OCIService:
         self.bucket_name = os.environ.get("OCI_BUCKET_NAME", "alura-agentes-knowledge-bucket")
         self.namespace = os.environ.get("OCI_NAMESPACE", "gr4v1ty_oci_namespace")
         
-        # Check if native OCI SDK is installed & config available
+        # Verifica se o SDK nativo da OCI está instalado e configurado
         self.is_sdk_available = False
         try:
             import oci
@@ -26,7 +26,7 @@ class OCIService:
             self.is_sdk_available = False
             
     def get_status(self) -> Dict[str, Any]:
-        """Return OCI Cloud status & deployment information."""
+        """Retorna o status de execução e informações de integração com a Nuvem OCI."""
         return {
             "status": "Online",
             "provider": "Oracle Cloud Infrastructure (OCI)",
@@ -37,14 +37,14 @@ class OCIService:
             "namespace": self.namespace,
             "oci_sdk_installed": self.is_sdk_available,
             "services_active": [
-                "OCI Object Storage (Document Repository)",
-                "OCI Container Instances (Cloud Execution)",
-                "OCI Generative AI / Custom RAG Inference API"
+                "OCI Object Storage (Repositório de Documentos)",
+                "OCI Container Instances (Execução em Nuvem)",
+                "OCI Generative AI / API de Inferência RAG"
             ]
         }
 
     def sync_document_to_oci(self, filename: str, content_bytes: bytes) -> Dict[str, Any]:
-        """Simulate or execute document upload to OCI Object Storage bucket."""
+        """Simula ou executa o envio do documento para o bucket do OCI Object Storage."""
         if self.is_sdk_available and os.environ.get("OCI_CONFIG_FILE"):
             try:
                 import oci
@@ -56,15 +56,16 @@ class OCIService:
                     object_name=filename,
                     put_object_body=content_bytes
                 )
-                return {"success": True, "message": f"Document {filename} synced to OCI Object Storage.", "mode": "OCI SDK Live"}
+                return {"success": True, "message": f"Documento {filename} sincronizado no OCI Object Storage.", "mode": "OCI SDK Live"}
             except Exception as e:
-                logger.warning(f"OCI SDK sync fallback: {e}")
+                logger.warning(f"Fallback de sincronização OCI SDK: {e}")
                 
         return {
             "success": True,
-            "message": f"Document {filename} staged for OCI Object Storage bucket '{self.bucket_name}'.",
-            "mode": "OCI Object Storage Active"
+            "message": f"Documento {filename} registrado no bucket '{self.bucket_name}' da OCI.",
+            "mode": "OCI Object Storage Ativo"
         }
 
-# Global OCI Service instance
+# Instância Global do Serviço OCI
 oci_service = OCIService()
+

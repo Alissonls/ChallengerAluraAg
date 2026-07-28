@@ -15,7 +15,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS for frontend dashboard
+# Habilita suporte a CORS para o painel web frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -30,7 +30,7 @@ class ChatQueryRequest(BaseModel):
 
 @app.on_event("startup")
 def load_sample_documents():
-    """Generate and auto-index pre-loaded corporate sample documents."""
+    """Gera e indexa automaticamente os documentos corporativos de exemplo na inicialização."""
     try:
         from generate_samples import create_sample_files, SAMPLE_DIR
         create_sample_files()
@@ -51,38 +51,38 @@ def load_sample_documents():
             )
             oci_service.sync_document_to_oci(filename, content_bytes)
             
-        print(f"Startup complete: Indexed {len(sample_files)} corporate sample documents.")
+        print(f"Inicialização concluída: {len(sample_files)} documentos corporativos indexados.")
     except Exception as e:
-        print(f"Error initializing sample documents: {e}")
+        print(f"Erro ao inicializar documentos de exemplo: {e}")
 
 @app.get("/api/health")
 def health_check():
-    """Service health check endpoint."""
-    return {"status": "ok", "app": "Nexus AI Agente Corporativo", "oci": "Connected"}
+    """Endpoint de verificação de saúde do serviço."""
+    return {"status": "ok", "app": "Nexus AI Agente Corporativo", "oci": "Conectado"}
 
 @app.get("/api/domains")
 def get_domains():
-    """Return available corporate department categories."""
+    """Retorna a lista de setores e departamentos corporativos disponíveis."""
     return {"domains": ["Todos"] + DOMAINS}
 
 @app.get("/api/documents")
 def list_documents():
-    """Return list of indexed corporate documents."""
+    """Retorna a lista de documentos corporativos indexados."""
     return {"documents": rag_engine.get_documents_summary()}
 
 @app.get("/api/stats")
 def get_stats():
-    """Return system & index metrics."""
+    """Retorna as métricas do sistema e do índice RAG."""
     return rag_engine.get_stats()
 
 @app.get("/api/oci/status")
 def get_oci_status():
-    """Return Oracle Cloud Infrastructure deployment and storage status."""
+    """Retorna o status de implantação e armazenamento na Oracle Cloud Infrastructure (OCI)."""
     return oci_service.get_status()
 
 @app.post("/api/upload")
 async def upload_document(file: UploadFile = File(...), domain: Optional[str] = Form(None)):
-    """Upload and index a new document in PDF, DOCX, XLSX, PPTX, MD, CSV, JSON, or HTML format."""
+    """Recebe e indexa um novo documento nos formatos PDF, DOCX, XLSX, PPTX, MD, CSV, JSON ou HTML."""
     try:
         content_bytes = await file.read()
         filename = file.filename
@@ -98,7 +98,7 @@ async def upload_document(file: UploadFile = File(...), domain: Optional[str] = 
             domain=domain if domain and domain != "Todos" else None
         )
         
-        # Sync to Oracle Cloud Object Storage
+        # Sincroniza com o bucket do Oracle Cloud Object Storage
         oci_result = oci_service.sync_document_to_oci(filename, content_bytes)
         
         return {
@@ -114,7 +114,7 @@ async def upload_document(file: UploadFile = File(...), domain: Optional[str] = 
 
 @app.post("/api/chat")
 def chat_query(req: ChatQueryRequest):
-    """Query the corporate AI agent using RAG document retrieval."""
+    """Consulta o agente de IA corporativo usando busca RAG e síntese semântica."""
     if not req.query.strip():
         raise HTTPException(status_code=400, detail="A pergunta não pode estar vazia.")
         
@@ -124,3 +124,4 @@ def chat_query(req: ChatQueryRequest):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+

@@ -43,7 +43,7 @@ export default function App() {
       setDocuments(docsRes.documents || []);
       setOciStatus(ociRes);
     } catch (err) {
-      console.error("Failed to load initial API data:", err);
+      console.error("Falha ao carregar dados iniciais da API:", err);
     }
   };
 
@@ -151,3 +151,4 @@ export default function App() {
     </div>
   );
 }
+

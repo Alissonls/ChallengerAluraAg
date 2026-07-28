@@ -2,7 +2,7 @@ import math
 import re
 from typing import List, Dict, Any, Optional
 
-# Supported Corporate Domains
+# Setores Organizacionais Suportados
 DOMAINS = [
     "Recursos Humanos",
     "Financeiro e Contábil",
@@ -30,7 +30,7 @@ DOMAIN_KEYWORDS = {
 }
 
 def detect_domain(filename: str, content: str) -> str:
-    """Auto-detect organizational department domain based on content and filename keywords."""
+    """Auto-detecta o setor corporativo com base nas palavras-chave do arquivo e conteúdo."""
     text_sample = (filename + " " + content[:2000]).lower()
     scores = {d: 0 for d in DOMAINS}
     
@@ -42,10 +42,10 @@ def detect_domain(filename: str, content: str) -> str:
     best_domain = max(scores, key=scores.get)
     if scores[best_domain] > 0:
         return best_domain
-    return "Operacional"  # Default fallback domain
+    return "Operacional"  # Setor padrão de fallback
 
 def chunk_text(text: str, chunk_size: int = 500, overlap: int = 100) -> List[str]:
-    """Break text into overlapping chunks for semantic indexing."""
+    """Divide o texto em blocos (chunks) sobrepostos para indexação semântica."""
     paragraphs = text.split("\n\n")
     chunks = []
     current_chunk = ""
@@ -64,7 +64,7 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 100) -> List[str
     if current_chunk:
         chunks.append(current_chunk)
         
-    # If any single chunk is still too big, slice by character boundary
+    # Se algum bloco ainda for muito grande, fatia pelo limite de caracteres
     final_chunks = []
     for c in chunks:
         if len(c) > chunk_size * 2:
@@ -76,7 +76,7 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 100) -> List[str
     return final_chunks if final_chunks else [text]
 
 def compute_tf_idf_score(query_terms: List[str], chunk_text: str, total_docs: int = 1) -> float:
-    """Compute lightweight TF-IDF cosine relevance score for query retrieval."""
+    """Calcula a pontuação de relevância TF-IDF e similaridade cosseno para busca RAG."""
     chunk_lower = chunk_text.lower()
     words = re.findall(r'\w+', chunk_lower)
     if not words:
@@ -94,14 +94,14 @@ def compute_tf_idf_score(query_terms: List[str], chunk_text: str, total_docs: in
     return score
 
 class RAGEngine:
-    """Enterprise RAG Storage and Search Engine."""
+    """Mecanismo de Armazenamento Vectorial e Busca RAG Corporativa."""
     
     def __init__(self):
         self.documents: Dict[str, Dict[str, Any]] = {}
         self.chunks: List[Dict[str, Any]] = []
         
     def add_document(self, doc_id: str, filename: str, doc_type: str, content: str, domain: Optional[str] = None):
-        """Index a document and produce semantic vector chunks."""
+        """Indexa um documento e gera os blocos (chunks) vetoriais semânticos."""
         assigned_domain = domain if domain else detect_domain(filename, content)
         
         doc_meta = {
@@ -115,10 +115,10 @@ class RAGEngine:
         }
         self.documents[doc_id] = doc_meta
         
-        # Remove old chunks for this doc if updating
+        # Remove blocos antigos se estiver atualizando o arquivo
         self.chunks = [c for c in self.chunks if c["doc_id"] != doc_id]
         
-        # Create chunks
+        # Cria novos blocos de texto
         doc_chunks = chunk_text(content, chunk_size=600, overlap=100)
         for idx, chunk_str in enumerate(doc_chunks):
             self.chunks.append({
@@ -133,7 +133,7 @@ class RAGEngine:
             })
             
     def get_documents_summary(self) -> List[Dict[str, Any]]:
-        """Return list of all indexed documents."""
+        """Retorna a lista sumarizada de todos os documentos indexados."""
         summary = []
         for d_id, meta in self.documents.items():
             summary.append({
@@ -146,8 +146,8 @@ class RAGEngine:
             })
         return summary
 
-    def get_stats((self) -> Dict[str, Any]:
-        """Return global index statistics."""
+    def get_stats(self) -> Dict[str, Any]:
+        """Retorna estatísticas globais do índice e categorias."""
         domain_counts = {d: 0 for d in DOMAINS}
         format_counts = {}
         for d in self.documents.values():
@@ -165,9 +165,9 @@ class RAGEngine:
         }
 
     def search(self, query: str, domain_filter: Optional[str] = None, top_k: int = 4) -> List[Dict[str, Any]]:
-        """Retrieve top_k most relevant chunks for a user query."""
+        """Recupera os top_k blocos mais relevantes para uma pergunta do usuário."""
         query_terms = re.findall(r'\w+', query.lower())
-        # Filter stop words in Portuguese & English
+        # Filtra stopwords comuns em português e inglês
         stop_words = {"de", "da", "do", "em", "para", "com", "na", "no", "um", "uma", "os", "as", "o", "a", "e", "ou", "que", "qual", "como", "onde", "quem", "sobre"}
         filtered_terms = [t for t in query_terms if t not in stop_words and len(t) > 1]
         if not filtered_terms:
@@ -180,7 +180,7 @@ class RAGEngine:
                 
             score = compute_tf_idf_score(filtered_terms, chunk["text"], len(self.documents))
             
-            # Additional score boost if filename matches query terms
+            # Bonificação caso o nome do arquivo contenha os termos da busca
             fn_lower = chunk["filename"].lower()
             for t in filtered_terms:
                 if t in fn_lower:
@@ -196,7 +196,7 @@ class RAGEngine:
         return scored_chunks[:top_k]
 
     def generate_answer(self, query: str, domain_filter: Optional[str] = None) -> Dict[str, Any]:
-        """Synthesize answer with citations based on RAG context."""
+        """Sintetiza a resposta final acompanhada das fontes da documentação."""
         retrieved_chunks = self.search(query, domain_filter=domain_filter, top_k=4)
         
         if not retrieved_chunks:
@@ -206,7 +206,7 @@ class RAGEngine:
                 "confidence": "Baixa"
             }
             
-        # Build synthesis context
+        # Constrói o contexto das fontes recuperadas
         sources = []
         context_blocks = []
         for idx, c in enumerate(retrieved_chunks):
@@ -220,9 +220,6 @@ class RAGEngine:
             })
             context_blocks.append(f"--- Fonte [{idx+1}]: {c['filename']} ({c['domain']} | {c['doc_type']}) ---\n{c['text']}")
 
-        context_str = "\n\n".join(context_blocks)
-        
-        # High quality natural Portuguese corporate answer template synthesis
         answer_text = self._synthesize_response(query, context_blocks, retrieved_chunks)
         
         return {
@@ -232,12 +229,12 @@ class RAGEngine:
         }
 
     def _synthesize_response(self, query: str, context_blocks: List[str], chunks: List[Dict[str, Any]]) -> str:
-        """Internal smart reasoning synthesizer for answering employee queries."""
+        """Sintetizador interno de respostas em português para o agente corporativo."""
         top_chunk = chunks[0]
         
         intro = f"Com base na documentação interna da empresa (**{top_chunk['filename']}**, setor de **{top_chunk['domain']}**), aqui estão as informações solicitadas:\n\n"
         
-        # Extract main relevant sentences matching query keywords
+        # Extrai frases relevantes que contêm as palavras da pergunta
         q_words = [w.lower() for w in re.findall(r'\w+', query) if len(w) > 3]
         matched_sentences = []
         
@@ -250,7 +247,6 @@ class RAGEngine:
                         if line_str not in matched_sentences:
                             matched_sentences.append(line_str)
 
-        body_bullets = ""
         if matched_sentences:
             body_bullets = "\n".join([f"- {s}" for s in matched_sentences[:6]])
         else:
@@ -260,5 +256,6 @@ class RAGEngine:
         
         return f"{intro}{body_bullets}{citations}"
 
-# Global RAG Instance
+# Instância Global do RAGEngine
 rag_engine = RAGEngine()
+

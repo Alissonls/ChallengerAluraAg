@@ -6,9 +6,9 @@ SAMPLE_DIR = os.path.join(os.path.dirname(__file__), "data", "sample_docs")
 os.makedirs(SAMPLE_DIR, exist_ok=True)
 
 def create_sample_files():
-    """Create sample documents across all 8 formats and 10 corporate domains."""
+    """Cria documentos de exemplo cobrindo todos os 8 formatos de arquivo e 10 setores corporativos."""
     
-    # 1. Markdown - Estratégico (Estratégico_OKRs_Roadmap_2026.md)
+    # 1. Markdown - Estratégico (Estrategico_OKRs_Roadmap_2026.md)
     md_content = """# OKRs e Planejamento Estratégico 2026 - Nexus Enterprise
 
 ## Objetivos Estratégicos (Q1 - Q4 2026)
@@ -121,8 +121,7 @@ Expandir as equipes de P&D e Engenharia de IA no primeiro semestre, focando em p
     with open(os.path.join(SAMPLE_DIR, "Dados_Catalogo_APIs_Integracao.json"), "w", encoding="utf-8") as f:
         json.dump(json_data, f, indent=2, ensure_ascii=False)
 
-    # 6. Word / DOCX sample (RH_Politica_Beneficios_HomeOffice.docx or txt fallback with docx extension parsing)
-    # Using python-docx if installed, otherwise clean formatted doc file
+    # 6. Word / DOCX (RH_Politica_Beneficios_HomeOffice.docx)
     try:
         import docx
         doc = docx.Document()
@@ -136,11 +135,10 @@ Expandir as equipes de P&D e Engenharia de IA no primeiro semestre, focando em p
         doc.add_paragraph('As férias devem ser solicitadas no portal de RH com antecedência mínima de 30 dias após completar o período aquisitivo de 12 meses.')
         doc.save(os.path.join(SAMPLE_DIR, "RH_Politica_Beneficios_HomeOffice.docx"))
     except Exception:
-        # Fallback text if docx not present
         with open(os.path.join(SAMPLE_DIR, "RH_Politica_Beneficios_HomeOffice.docx"), "w", encoding="utf-8") as f:
             f.write("Política de Recursos Humanos: Benefícios e Home Office\nCategoria: Recursos Humanos\nAuxílio Home Office: R$ 350,00 mensais.\nVale Refeição: R$ 1.200,00 via cartão Flash.\nPlano de Saúde Bradesco Top sem coparticipação.")
 
-    # 7. Excel / XLSX sample (Financeiro_DRE_Balanço_2025.xlsx)
+    # 7. Excel / XLSX (Financeiro_DRE_Balanço_2025.xlsx)
     try:
         import openpyxl
         wb = openpyxl.Workbook()
@@ -156,7 +154,7 @@ Expandir as equipes de P&D e Engenharia de IA no primeiro semestre, focando em p
         with open(os.path.join(SAMPLE_DIR, "Financeiro_DRE_Balanco_2025.xlsx"), "w", encoding="utf-8") as f:
             f.write("DRE 2025 | Financeiro e Contábil\nReceita Bruta: R$ 60.600.000,00\nLucro Líquido: R$ 25.350.000,00\nCustos OCI Cloud: R$ 5.450.000,00")
 
-    # 8. PowerPoint / PPTX sample (Comunicacao_Apresentacao_Onboarding.pptx)
+    # 8. PowerPoint / PPTX (Comunicacao_Apresentacao_Onboarding.pptx)
     try:
         import pptx
         prs = pptx.Presentation()
@@ -170,21 +168,25 @@ Expandir as equipes de P&D e Engenharia de IA no primeiro semestre, focando em p
         with open(os.path.join(SAMPLE_DIR, "Comunicacao_Apresentacao_Onboarding.pptx"), "w", encoding="utf-8") as f:
             f.write("Guia de Onboarding e Comunicação Interna\nCategoria: Comunicação Interna\nReunião Semanal: Terças às 09h.\nCanal de Comunicação Oficial: Slack.")
 
-    # 9. PDF sample (Operacional_Manual_Procedimentos_TI.pdf)
+    # 9. PDF (Operacional_Manual_Procedimentos_TI.pdf)
     try:
         import pypdf
         writer = pypdf.PdfWriter()
         page = writer.add_blank_page(width=612, height=792)
-        # Add basic text metadata if possible, or fallback text file if pypdf has no generator helper
         with open(os.path.join(SAMPLE_DIR, "Operacional_Manual_Procedimentos_TI.pdf"), "w", encoding="utf-8") as f:
             f.write("Manual de Procedimentos Operacionais de TI\nCategoria: Operacional\nCódigo: MAN-TI-001\nProcedimento em caso de falha no servidor: Notificar equipe DevOps em #ti-incidentes no Slack. O tempo máximo de resposta para severidade 1 é 15 minutos.")
     except Exception:
         with open(os.path.join(SAMPLE_DIR, "Operacional_Manual_Procedimentos_TI.pdf"), "w", encoding="utf-8") as f:
             f.write("Manual Operacional TI | Categoria: Operacional | Tempo de resposta para incidentes críticos: 15 minutos.")
 
-    # 10. PDF sample (Pesquisa_Business_Case_AI.pdf)
+    # 10. PDF (Pesquisa_Business_Case_AI.pdf)
     with open(os.path.join(SAMPLE_DIR, "Pesquisa_Business_Case_AI.pdf"), "w", encoding="utf-8") as f:
         f.write("Business Case: Agente Corporativo de IA em Oracle Cloud (OCI)\nCategoria: Pesquisa e Desenvolvimento\nResumo: Estudo de viabilidade de agentes RAG corporativos demonstrando ganho de 35% de produtividade na busca por informações internas.")
+
+if __name__ == "__main__":
+    create_sample_files()
+    print("Documentos corporativos de exemplo gerados com sucesso!")
+ternas.")
 
 if __name__ == "__main__":
     create_sample_files()
