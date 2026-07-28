@@ -1,24 +1,26 @@
-# ⚡ Nexus AI — Agente Corporativo de Conhecimento Multi-Formato em Nuvem Oracle (OCI)
+# ⚡ Nexus AI — Chatbot Corporativo de Conhecimento com Trava de Acesso por Setor (RBAC) em Nuvem Oracle (OCI)
 
 > **Desafio Alura Agentes — Edição Corporativa de IA**  
-> Um agente de Inteligência Artificial corporativo acessível a todos os colaboradores, capaz de processar **8 formatos de arquivo** em **10 domínios organizacionais**, fornecendo respostas precisas com citações auditáveis em tempo real.
+> Um Chatbot de Inteligência Artificial corporativo integrado que **restringe o acesso às informações exclusivamente ao setor do colaborador autenticado**. Suporta **8 formatos de arquivo** em **10 domínios organizacionais**, garantindo sigilo entre departamentos e conformidade com a LGPD.
 
 ![Nexus AI na Oracle Cloud Infrastructure (OCI)](docs/nexus_ai_oci_dashboard.png)
 
 ---
 
-## 📌 Visão Geral do Projeto
+## 🔒 Política de Segurança & Controle de Acesso por Setor (RBAC)
 
-O **Nexus AI** foi idealizado para centralizar o conhecimento corporativo de uma empresa fictícia, eliminando silos de informação entre departamentos. Sem restrições de acesso por perfil, qualquer colaborador pode consultar dados estratégicos, financeiros, operacionais ou jurídicos de forma conversacional.
+Em um ambiente corporativo real, a informação deve ser protegida por níveis de sigilo. No **Nexus AI**, o Chatbot implementa **Controle de Acesso Baseado em Função (RBAC)**:
 
-### 🌟 Diferenciais
-- **Acesso Aberto & Centralizado**: Disponível a toda a empresa com interface intuitiva em modo escuro/claro (Glassmorphism).
-- **Busca Semântica RAG (Retrieval-Augmented Generation)**: Respostas sintetizadas com indicação exata de fontes, trechos e arquivos.
-- **Pronto para Oracle Cloud (OCI)**: Integração nativa com OCI Object Storage e OCI Container Instances.
+- 👥 **Acesso Restrito ao Departamento**: Cada colaborador ao se autenticar no Chatbot tem acesso **apenas aos documentos do seu próprio setor** (ex: *Recursos Humanos só acessa documentos de RH*, *Financeiro só acessa DRE/Contabilidade*).
+- 📢 **Comunicação Interna Pública**: Todos os colaboradores têm acesso aos comunicados gerais e avisos da empresa.
+- 🔑 **Perfil Administrador / Gestor**: Permite visualizar e consultar os documentos de todos os setores.
+- 🛡️ **Trava de Segurança Antivazamento**: Qualquer tentativa de perguntar sobre documentos sigilosos de outro setor gera um bloqueio automático com aviso de segurança:
+  > *"🔒 **Acesso Negado por Política de Segurança (RBAC)**: Seu usuário está autenticado no setor X, mas a informação solicitada pertence ao setor Y. Cada colaborador tem acesso exclusivo aos documentos do seu departamento."*
 
 ---
 
 ## 📄 Suporte Multi-Formato (8 Formatos Integrados)
+
 
 O agente compreende e extrai dados estruturados e não-estruturados dos 8 formatos mais comuns do mercado:
 

@@ -42,7 +42,7 @@ def detect_domain(filename: str, content: str) -> str:
     best_domain = max(scores, key=scores.get)
     if scores[best_domain] > 0:
         return best_domain
-    return "Operacional"  # Setor padrão de fallback
+    return "Operacional"
 
 def chunk_text(text: str, chunk_size: int = 500, overlap: int = 100) -> List[str]:
     """Divide o texto em blocos (chunks) sobrepostos para indexação semântica."""
@@ -64,7 +64,6 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 100) -> List[str
     if current_chunk:
         chunks.append(current_chunk)
         
-    # Se algum bloco ainda for muito grande, fatia pelo limite de caracteres
     final_chunks = []
     for c in chunks:
         if len(c) > chunk_size * 2:
@@ -94,14 +93,14 @@ def compute_tf_idf_score(query_terms: List[str], chunk_text: str, total_docs: in
     return score
 
 class RAGEngine:
-    """Mecanismo de Armazenamento Vectorial e Busca RAG Corporativa."""
+    """Mecanismo de Busca RAG com Controle de Acesso Restrito por Setor (RBAC)."""
     
     def __init__(self):
         self.documents: Dict[str, Dict[str, Any]] = {}
         self.chunks: List[Dict[str, Any]] = []
         
     def add_document(self, doc_id: str, filename: str, doc_type: str, content: str, domain: Optional[str] = None):
-        """Indexa um documento e gera os blocos (chunks) vetoriais semânticos."""
+        """Indexa um documento no seu respectivo setor corporativo."""
         assigned_domain = domain if domain else detect_domain(filename, content)
         
         doc_meta = {
@@ -114,11 +113,8 @@ class RAGEngine:
             "content": content
         }
         self.documents[doc_id] = doc_meta
-        
-        # Remove blocos antigos se estiver atualizando o arquivo
         self.chunks = [c for c in self.chunks if c["doc_id"] != doc_id]
         
-        # Cria novos blocos de texto
         doc_chunks = chunk_text(content, chunk_size=600, overlap=100)
         for idx, chunk_str in enumerate(doc_chunks):
             self.chunks.append({
@@ -132,10 +128,14 @@ class RAGEngine:
                 "text": chunk_str
             })
             
-    def get_documents_summary(self) -> List[Dict[str, Any]]:
-        """Retorna a lista sumarizada de todos os documentos indexados."""
+    def get_documents_summary(self, user_department: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Retorna documentos permitidos ao setor do colaborador logado."""
         summary = []
         for d_id, meta in self.documents.items():
+            if user_department and user_department not in ["Administrador", "Todos"]:
+                if meta["domain"] != user_department and meta["domain"] != "Comunicação Interna":
+                    continue
+                    
             summary.append({
                 "doc_id": meta["doc_id"],
                 "filename": meta["filename"],
@@ -147,13 +147,12 @@ class RAGEngine:
         return summary
 
     def get_stats(self) -> Dict[str, Any]:
-        """Retorna estatísticas globais do índice e categorias."""
+        """Retorna estatísticas globais do índice."""
         domain_counts = {d: 0 for d in DOMAINS}
         format_counts = {}
         for d in self.documents.values():
             dom = d["domain"]
             domain_counts[dom] = domain_counts.get(dom, 0) + 1
-            
             fmt = d["doc_type"]
             format_counts[fmt] = format_counts.get(fmt, 0) + 1
             
@@ -164,10 +163,12 @@ class RAGEngine:
             "format_counts": format_counts
         }
 
-    def search(self, query: str, domain_filter: Optional[str] = None, top_k: int = 4) -> List[Dict[str, Any]]:
-        """Recupera os top_k blocos mais relevantes para uma pergunta do usuário."""
+    def search(self, query: str, user_department: str = "Recursos Humanos", top_k: int = 4) -> List[Dict[str, Any]]:
+        """
+        Recupera os blocos mais relevantes aplicando restrição de acesso por setor.
+        Colaboradores só podem acessar documentos do SEU SETOR ou de Comunicação Interna.
+        """
         query_terms = re.findall(r'\w+', query.lower())
-        # Filtra stopwords comuns em português e inglês
         stop_words = {"de", "da", "do", "em", "para", "com", "na", "no", "um", "uma", "os", "as", "o", "a", "e", "ou", "que", "qual", "como", "onde", "quem", "sobre"}
         filtered_terms = [t for t in query_terms if t not in stop_words and len(t) > 1]
         if not filtered_terms:
@@ -175,12 +176,12 @@ class RAGEngine:
 
         scored_chunks = []
         for chunk in self.chunks:
-            if domain_filter and domain_filter != "Todos" and chunk["domain"] != domain_filter:
-                continue
+            # Trava de Segurança por Setor (RBAC)
+            if user_department not in ["Administrador", "Todos"]:
+                if chunk["domain"] != user_department and chunk["domain"] != "Comunicação Interna":
+                    continue
                 
             score = compute_tf_idf_score(filtered_terms, chunk["text"], len(self.documents))
-            
-            # Bonificação caso o nome do arquivo contenha os termos da busca
             fn_lower = chunk["filename"].lower()
             for t in filtered_terms:
                 if t in fn_lower:
@@ -195,18 +196,35 @@ class RAGEngine:
         scored_chunks.sort(key=lambda x: x["score"], reverse=True)
         return scored_chunks[:top_k]
 
-    def generate_answer(self, query: str, domain_filter: Optional[str] = None) -> Dict[str, Any]:
-        """Sintetiza a resposta final acompanhada das fontes da documentação."""
-        retrieved_chunks = self.search(query, domain_filter=domain_filter, top_k=4)
+    def generate_answer(self, query: str, user_department: str = "Recursos Humanos") -> Dict[str, Any]:
+        """Gera a resposta do Chatbot aplicando a trava de segurança por setor."""
+        retrieved_chunks = self.search(query, user_department=user_department, top_k=4)
         
+        # Verificar se a pergunta visava um setor não autorizado
+        unauthorized_target = None
+        if not retrieved_chunks and user_department not in ["Administrador", "Todos"]:
+            for chunk in self.chunks:
+                score = compute_tf_idf_score([w for w in re.findall(r'\w+', query.lower()) if len(w) > 3], chunk["text"], len(self.documents))
+                if score > 0.05 and chunk["domain"] != user_department and chunk["domain"] != "Comunicação Interna":
+                    unauthorized_target = chunk["domain"]
+                    break
+
+        if unauthorized_target:
+            return {
+                "answer": f"🔒 **Acesso Negado por Política de Segurança (RBAC)**:\n\n"
+                          f"Seu usuário está autenticado no setor **{user_department}**, mas a informação solicitada pertence ao setor de **{unauthorized_target}**.\n\n"
+                          f"Cada colaborador tem acesso exclusivo aos documentos do seu próprio departamento. Para consultar estes dados, solicite permissão ao gestor de {unauthorized_target}.",
+                "sources": [],
+                "confidence": "Restrito"
+            }
+
         if not retrieved_chunks:
             return {
-                "answer": "Desculpe, não encontrei informações suficientes nos documentos corporativos cadastrados para responder a essa pergunta. Tente refinar a busca ou selecionar outra categoria.",
+                "answer": f"Não foram encontradas informações relevantes na base documental autorizada do setor **{user_department}**.",
                 "sources": [],
                 "confidence": "Baixa"
             }
             
-        # Constrói o contexto das fontes recuperadas
         sources = []
         context_blocks = []
         for idx, c in enumerate(retrieved_chunks):
@@ -220,7 +238,7 @@ class RAGEngine:
             })
             context_blocks.append(f"--- Fonte [{idx+1}]: {c['filename']} ({c['domain']} | {c['doc_type']}) ---\n{c['text']}")
 
-        answer_text = self._synthesize_response(query, context_blocks, retrieved_chunks)
+        answer_text = self._synthesize_response(query, context_blocks, retrieved_chunks, user_department)
         
         return {
             "answer": answer_text,
@@ -228,13 +246,12 @@ class RAGEngine:
             "confidence": "Alta" if retrieved_chunks[0]["score"] > 0.1 else "Média"
         }
 
-    def _synthesize_response(self, query: str, context_blocks: List[str], chunks: List[Dict[str, Any]]) -> str:
-        """Sintetizador interno de respostas em português para o agente corporativo."""
+    def _synthesize_response(self, query: str, context_blocks: List[str], chunks: List[Dict[str, Any]], user_dept: str) -> str:
+        """Sintetiza a resposta autorizada do Chatbot em português."""
         top_chunk = chunks[0]
         
-        intro = f"Com base na documentação interna da empresa (**{top_chunk['filename']}**, setor de **{top_chunk['domain']}**), aqui estão as informações solicitadas:\n\n"
+        intro = f"Com base na documentação autorizada do setor de **{top_chunk['domain']}** (Arquivo: **{top_chunk['filename']}**):\n\n"
         
-        # Extrai frases relevantes que contêm as palavras da pergunta
         q_words = [w.lower() for w in re.findall(r'\w+', query) if len(w) > 3]
         matched_sentences = []
         
@@ -252,10 +269,10 @@ class RAGEngine:
         else:
             body_bullets = top_chunk["text"][:400] + "..."
 
-        citations = f"\n\n> 📌 **Fonte de Referência:** [{top_chunk['filename']}](doc://{top_chunk['doc_id']}) (Formato: {top_chunk['doc_type']} | Categoria: {top_chunk['domain']})"
+        citations = f"\n\n> 🛡️ **Acesso Restrito ao Setor:** {user_dept} | 📌 **Fonte:** [{top_chunk['filename']}](doc://{top_chunk['doc_id']}) ({top_chunk['doc_type']})"
         
         return f"{intro}{body_bullets}{citations}"
 
-# Instância Global do RAGEngine
 rag_engine = RAGEngine()
+
 

@@ -1,7 +1,21 @@
 import React from 'react';
-import { Cpu, Cloud, Sun, Moon, ShieldCheck, Database } from 'lucide-react';
+import { Cpu, Cloud, Sun, Moon, Database, ShieldCheck, UserCheck } from 'lucide-react';
 
-export default function Header({ isDark, toggleTheme, ociStatus, stats }) {
+const DEPARTMENTS = [
+  "Recursos Humanos",
+  "Financeiro e Contábil",
+  "Operacional",
+  "Estratégico",
+  "Legal e Compliance",
+  "Marketing e Comercial",
+  "Dados e Sistemas",
+  "Pesquisa e Desenvolvimento",
+  "Qualidade",
+  "Comunicação Interna",
+  "Administrador"
+];
+
+export default function Header({ isDark, toggleTheme, userDepartment, onChangeDepartment, stats }) {
   return (
     <header className="header-bar">
       <div className="brand-logo">
@@ -9,9 +23,25 @@ export default function Header({ isDark, toggleTheme, ociStatus, stats }) {
           <Cpu size={24} />
         </div>
         <div>
-          <h1 className="brand-title">Nexus AI</h1>
-          <p className="brand-subtitle">Agente Corporativo de Conhecimento Multi-Formato</p>
+          <h1 className="brand-title">Nexus AI Chatbot</h1>
+          <p className="brand-subtitle">Agente Corporativo com Trava de Acesso por Setor (RBAC)</p>
         </div>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'var(--bg-surface-elevated)', border: '1px solid var(--border-glow)', padding: '0.4rem 0.9rem', borderRadius: 'var(--radius-full)', fontSize: '0.85rem' }}>
+        <UserCheck size={16} color="var(--accent-primary)" />
+        <span style={{ fontWeight: 600 }}>Setor do Colaborador:</span>
+        <select 
+          value={userDepartment}
+          onChange={(e) => onChangeDepartment(e.target.value)}
+          style={{ background: 'transparent', border: 'none', color: 'var(--accent-primary)', fontWeight: 700, outline: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+        >
+          {DEPARTMENTS.map(d => (
+            <option key={d} value={d} style={{ background: 'var(--bg-surface)', color: 'var(--text-primary)' }}>
+              {d === "Administrador" ? "🔑 Administrador" : `👥 ${d}`}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="header-badges">
@@ -19,11 +49,6 @@ export default function Header({ isDark, toggleTheme, ociStatus, stats }) {
           <Cloud size={16} />
           <span>OCI Cloud (sa-saopaulo-1)</span>
           <span className="oci-pulse-dot" />
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-surface-elevated)', padding: '0.4rem 0.8rem', borderRadius: 'var(--radius-full)', fontSize: '0.8rem', border: '1px solid var(--border-subtle)' }}>
-          <Database size={14} color="#8b5cf6" />
-          <span>{stats?.total_documents || 0} Docs / {stats?.total_chunks || 0} Chunks</span>
         </div>
 
         <button 
@@ -47,3 +72,4 @@ export default function Header({ isDark, toggleTheme, ociStatus, stats }) {
     </header>
   );
 }
+

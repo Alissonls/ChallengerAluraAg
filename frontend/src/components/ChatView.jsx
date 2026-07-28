@@ -9,12 +9,12 @@ const SUGGESTIONS = [
   { label: "⚙️ SLA de Incidentes de TI", query: "Qual o tempo máximo de resposta para chamados críticos de TI?", domain: "Operacional" }
 ];
 
-export default function ChatView({ selectedDomain, onSelectCitation }) {
+export default function ChatView({ userDepartment, onSelectCitation }) {
   const [messages, setMessages] = useState([
     {
       id: "welcome",
       sender: "agent",
-      text: "Olá! Sou o **Nexus AI**, agente corporativo de inteligência artificial. Como posso ajudar com os documentos e políticas da empresa hoje?",
+      text: `Olá! Sou o **Nexus AI**, o Chatbot corporativo. Você está conectado como colaborador do setor de **${userDepartment}**.\n\n🔒 *Por política de segurança da empresa, você possui acesso exclusivo aos documentos do seu setor e comunicados internos. Consultas a outros setores serão bloqueadas.*`,
       sources: [],
       timestamp: "Agora"
     }
@@ -31,7 +31,7 @@ export default function ChatView({ selectedDomain, onSelectCitation }) {
     scrollToBottom();
   }, [messages, loading]);
 
-  const handleSend = async (queryText = inputQuery, domainOverride = selectedDomain) => {
+  const handleSend = async (queryText = inputQuery) => {
     const textToSend = queryText.trim();
     if (!textToSend || loading) return;
 
@@ -50,9 +50,11 @@ export default function ChatView({ selectedDomain, onSelectCitation }) {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: textToSend, domain: domainOverride })
+        body: JSON.stringify({ query: textToSend, user_department: userDepartment })
       });
       const data = await res.json();
+
+      const isRestricted = data.confidence === "Restrito";
 
       const agentMsg = {
         id: (Date.now() + 1).toString(),
@@ -60,6 +62,7 @@ export default function ChatView({ selectedDomain, onSelectCitation }) {
         text: data.answer,
         sources: data.sources || [],
         confidence: data.confidence || "Alta",
+        isRestricted: isRestricted,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, agentMsg]);
@@ -69,7 +72,7 @@ export default function ChatView({ selectedDomain, onSelectCitation }) {
         {
           id: Date.now().toString(),
           sender: "agent",
-          text: "Desculpe, ocorreu uma falha ao comunicar com o servidor do agente RAG.",
+          text: "Desculpe, ocorreu uma falha ao comunicar com o servidor do Chatbot RAG.",
           sources: [],
           timestamp: "Erro"
         }
@@ -78,6 +81,7 @@ export default function ChatView({ selectedDomain, onSelectCitation }) {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="chat-container">

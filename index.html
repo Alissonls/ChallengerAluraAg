@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nexus AI — Agente Corporativo de Conhecimento Multi-Formato (OCI Cloud)</title>
+  <title>Nexus AI — Agente Corporativo de Conhecimento com Controle de Acesso por Setor (OCI Cloud)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -15,7 +15,7 @@
       --bg-main: #090d16;
       --bg-surface: #111827;
       --bg-surface-elevated: #1f293d;
-      --bg-glass: rgba(17, 24, 39, 0.8);
+      --bg-glass: rgba(17, 24, 39, 0.85);
       --bg-glass-hover: rgba(31, 41, 61, 0.9);
       
       --border-subtle: rgba(255, 255, 255, 0.08);
@@ -70,7 +70,7 @@
     .header-bar {
       display: flex; align-items: center; justify-content: space-between;
       padding: 0.9rem 1.8rem; background: var(--bg-glass); backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border-subtle); z-index: 50;
+      border-bottom: 1px solid var(--border-subtle); z-index: 50; flex-wrap: wrap; gap: 1rem;
     }
 
     .brand-logo { display: flex; align-items: center; gap: 0.75rem; }
@@ -80,6 +80,16 @@
     }
     .brand-title { font-size: 1.25rem; font-weight: 800; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .brand-subtitle { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+
+    .user-profile-badge {
+      display: flex; align-items: center; gap: 0.6rem; background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-glow); padding: 0.45rem 1rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 600;
+    }
+
+    .profile-select {
+      background: transparent; border: none; color: var(--accent-primary); font-weight: 700; font-family: inherit; font-size: 0.85rem; outline: none; cursor: pointer;
+    }
+    .profile-select option { background: var(--bg-surface); color: var(--text-primary); }
 
     .header-badges { display: flex; align-items: center; gap: 0.75rem; }
     .oci-badge {
@@ -111,6 +121,7 @@
     }
     .domain-btn:hover { background: var(--bg-surface-elevated); color: var(--text-primary); }
     .domain-btn.active { background: rgba(99, 102, 241, 0.15); border-color: var(--border-glow); color: var(--accent-primary); font-weight: 600; }
+    .domain-btn.locked { opacity: 0.45; cursor: not-allowed; }
     .count-tag { font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: var(--radius-full); background: var(--bg-surface-elevated); color: var(--text-muted); }
     .domain-btn.active .count-tag { background: var(--accent-primary); color: white; }
 
@@ -158,6 +169,7 @@
       background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);
       padding: 1.25rem 1.5rem; box-shadow: var(--shadow-card);
     }
+    .msg-card.denied { border-color: #ef4444; background: rgba(239, 68, 68, 0.08); }
     .msg-row.user .msg-card { background: var(--accent-primary); color: white; border-color: transparent; border-bottom-right-radius: 4px; }
     .msg-row.agent .msg-card { border-bottom-left-radius: 4px; }
 
@@ -221,8 +233,26 @@
       <div class="logo-badge">⚡</div>
       <div>
         <h1 class="brand-title">Nexus AI</h1>
-        <p class="brand-subtitle">Agente Corporativo de Conhecimento Multi-Formato</p>
+        <p class="brand-subtitle">Agente Corporativo com Trava de Acesso por Setor (RBAC)</p>
       </div>
+    </div>
+
+    <!-- User Department Login Selector -->
+    <div class="user-profile-badge">
+      <span>👤 Colaborador do Setor:</span>
+      <select id="user-department-select" class="profile-select" onchange="changeUserDepartment(this.value)">
+        <option value="Recursos Humanos">👥 Recursos Humanos</option>
+        <option value="Financeiro e Contábil">💰 Financeiro e Contábil</option>
+        <option value="Operacional">⚙️ Operacional</option>
+        <option value="Estratégico">🎯 Estratégico</option>
+        <option value="Legal e Compliance">⚖️ Legal e Compliance</option>
+        <option value="Marketing e Comercial">📈 Marketing e Comercial</option>
+        <option value="Dados e Sistemas">💾 Dados e Sistemas</option>
+        <option value="Pesquisa e Desenvolvimento">🧪 Pesquisa e Desenvolvimento</option>
+        <option value="Qualidade">🏅 Qualidade</option>
+        <option value="Comunicação Interna">📢 Comunicação Interna</option>
+        <option value="Administrador">🔑 Administrador (Acesso Geral)</option>
+      </select>
     </div>
 
     <div class="header-badges">
@@ -241,16 +271,16 @@
     <!-- Sidebar -->
     <aside class="sidebar">
       <div>
-        <div class="sidebar-title">Setores Corporativos</div>
-        <div className="domain-list" id="domain-list-container"></div>
+        <div class="sidebar-title">Setor Selecionado & Permissões</div>
+        <div class="domain-list" id="domain-list-container"></div>
       </div>
 
       <div style="margin-top: auto;">
-        <div class="sidebar-title">Ingestão de Documentos</div>
+        <div class="sidebar-title">Ingestão de Documentos do Setor</div>
         <input type="file" id="file-upload-input" style="display:none;" accept=".pdf,.docx,.doc,.xlsx,.xls,.pptx,.ppt,.md,.markdown,.csv,.json,.html,.htm" onchange="handleFileUpload(event)">
         <div class="upload-box" onclick="document.getElementById('file-upload-input').click()">
           <div style="font-size: 1.8rem; margin-bottom: 0.3rem;">📤</div>
-          <p style="font-size: 0.85rem; font-weight: 700;">Carregar Novo Documento</p>
+          <p style="font-size: 0.85rem; font-weight: 700;">Enviar Documento para o Setor</p>
           <p style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">Suporte aos 8 formatos de arquivo</p>
           
           <div class="format-row">
@@ -270,36 +300,36 @@
     <!-- Main Workspace -->
     <main class="content-area">
       <nav class="tabs-header">
-        <button class="tab-btn active" id="tab-chat-btn" onclick="switchTab('chat')">💬 Agente de IA Conversacional</button>
-        <button class="tab-btn" id="tab-docs-btn" onclick="switchTab('docs')">📚 Base de Documentos (<span id="doc-count-tag">10</span>)</button>
+        <button class="tab-btn active" id="tab-chat-btn" onclick="switchTab('chat')">💬 Chatbot do Setor</button>
+        <button class="tab-btn" id="tab-docs-btn" onclick="switchTab('docs')">📚 Documentos Autorizados (<span id="doc-count-tag">10</span>)</button>
         <button class="tab-btn" id="tab-oci-btn" onclick="switchTab('oci')">☁️ Status Oracle Cloud (OCI)</button>
       </nav>
 
-      <!-- TAB 1: CHAT -->
+      <!-- TAB 1: CHATBOT -->
       <div id="view-chat" class="chat-view">
         <div class="chat-messages" id="chat-messages-container">
           <div class="msg-row agent">
             <div class="avatar agent">🤖</div>
             <div class="msg-card">
               <div class="msg-meta">
-                <span>Nexus AI Agente Corporativo</span> • <span>Agora</span>
+                <span>Nexus AI Chatbot Corporativo</span> • <span>Agora</span>
               </div>
-              <p>Olá! Sou o **Nexus AI**, o agente de inteligência artificial corporativo para a sua empresa. Posso responder qualquer dúvida sobre políticas, DRE, contratos, OKRs, manuais de TI, APIs ou tabelas de preços.</p>
+              <p id="welcome-message-text">Olá! Sou o **Nexus AI**, o Chatbot corporativo. Você está conectado como colaborador do setor de **Recursos Humanos**.</p>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">🔒 *Por política de segurança da empresa, você possui acesso exclusivo aos documentos do seu setor e comunicados internos. Consultas a outros setores serão bloqueadas.*</p>
             </div>
           </div>
         </div>
 
         <div class="chat-input-container">
           <div class="suggestions-row">
-            <button class="sug-pill" onclick="sendQuickQuery('Quais são as metas e OKRs estratégicos para 2026?', 'Estratégico')">🎯 OKRs Estratégicos 2026</button>
-            <button class="sug-pill" onclick="sendQuickQuery('Qual o valor do auxílio home office e benefícios de RH?', 'Recursos Humanos')">💼 Auxílio Home Office RH</button>
-            <button class="sug-pill" onclick="sendQuickQuery('Quem é a encarregada DPO e qual a política da LGPD?', 'Legal e Compliance')">🔒 DPO & Privacidade LGPD</button>
-            <button class="sug-pill" onclick="sendQuickQuery('Quais são os preços e planos da tabela comercial?', 'Marketing e Comercial')">💰 Tabela de Preços Comercial</button>
-            <button class="sug-pill" onclick="sendQuickQuery('Qual o tempo máximo de resposta para chamados críticos de TI?', 'Operacional')">⚙️ SLA de Incidentes de TI</button>
+            <button class="sug-pill" onclick="sendQuickQuery('Qual o valor do auxílio home office e benefícios de RH?')">💼 Auxílio Home Office (RH)</button>
+            <button class="sug-pill" onclick="sendQuickQuery('Quais são os relatórios de DRE e lucros do setor Financeiro?')">⚠️ Testar DRE (Financeiro - Bloqueado p/ RH)</button>
+            <button class="sug-pill" onclick="sendQuickQuery('Qual a política de privacidade e LGPD?')">🔒 LGPD & Privacidade (Legal)</button>
+            <button class="sug-pill" onclick="sendQuickQuery('Quais são as metas e OKRs estratégicos para 2026?')">🎯 OKRs Estratégicos (Estratégico)</button>
           </div>
 
           <div class="input-wrapper">
-            <input type="text" id="chat-input-field" class="chat-input" placeholder="Faça uma pergunta sobre a empresa..." onkeydown="if(event.key==='Enter') sendUserQuery()">
+            <input type="text" id="chat-input-field" class="chat-input" placeholder="Faça uma pergunta ao Chatbot do seu setor..." onkeydown="if(event.key==='Enter') sendUserQuery()">
             <button class="send-btn" onclick="sendUserQuery()">➔</button>
           </div>
         </div>
@@ -307,9 +337,12 @@
 
       <!-- TAB 2: DOCUMENTS HUB -->
       <div id="view-docs" style="display: none; flex: 1; flex-direction: column; overflow: hidden;">
-        <div style="padding: 1.5rem 1.75rem 0.5rem; display: flex; justify-content: space-between; align-items: center;">
-          <h2 style="font-size: 1.3rem; font-weight: 800;">Base de Conhecimento Centralizada</h2>
-          <input type="text" id="doc-search-filter" placeholder="Buscar documento ou formato..." oninput="renderDocumentsGrid()" style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.45rem 0.85rem; color: var(--text-primary); outline: none; font-size: 0.85rem;">
+        <div style="padding: 1.5rem 1.75rem 0.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h2 style="font-size: 1.3rem; font-weight: 800;">Base Documental Autorizada</h2>
+            <p style="font-size: 0.8rem; color: var(--text-muted);" id="doc-sec-notice">Exibindo documentos restritos ao setor logado.</p>
+          </div>
+          <input type="text" id="doc-search-filter" placeholder="Buscar documento..." oninput="renderDocumentsGrid()" style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.45rem 0.85rem; color: var(--text-primary); outline: none; font-size: 0.85rem;">
         </div>
         <div class="docs-grid" id="documents-grid-container"></div>
       </div>
@@ -318,7 +351,7 @@
       <div id="view-oci" class="oci-view" style="display: none;">
         <div>
           <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">Oracle Cloud Infrastructure (OCI) Status</h2>
-          <p style="color: var(--text-muted); font-size: 0.85rem;">Infraestrutura e persistência de documentos corporativos em nuvem.</p>
+          <p style="color: var(--text-muted); font-size: 0.85rem;">Infraestrutura e segurança de documentos corporativos em nuvem.</p>
         </div>
 
         <div class="metrics-grid">
@@ -335,9 +368,9 @@
           </div>
 
           <div class="metric-card">
-            <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">Chunks Vetoriais RAG</span>
-            <span class="metric-val" id="oci-chunk-metric">32</span>
-            <span style="font-size: 0.75rem; color: var(--text-muted);">Índice Cosseno Ativo</span>
+            <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">Trava de Segurança RBAC</span>
+            <span class="metric-val" style="color: #6366f1; -webkit-text-fill-color: initial;">Ativa</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Restrição por Setor</span>
           </div>
 
           <div class="metric-card">
@@ -346,15 +379,6 @@
             <span style="font-size: 0.75rem; color: var(--text-muted);">PDF, DOCX, XLSX, PPTX, MD, CSV, JSON, HTML</span>
           </div>
         </div>
-
-        <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.5rem;">
-          <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">Servidores OCI Integrados</h3>
-          <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.9rem;">
-            <li>✅ <strong>OCI Object Storage:</strong> Bucket de armazenamento seguro para os 8 formatos de arquivo.</li>
-            <li>✅ <strong>OCI Container Instances:</strong> Conteinerização Docker ativa para execução em nuvem.</li>
-            <li>✅ <strong>OCI Generative AI:</strong> API de síntese e inferência vetorial RAG.</li>
-          </ul>
-        </div>
       </div>
     </main>
   </div>
@@ -362,7 +386,7 @@
   <!-- Drawer Modal -->
   <div class="drawer-overlay" id="drawer-modal">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-      <h3 style="font-size: 1.1rem; font-weight: 700;">Inspecionar Fonte RAG</h3>
+      <h3 style="font-size: 1.1rem; font-weight: 700;">Inspecionar Documento</h3>
       <button onclick="closeDrawer()" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer;">✕</button>
     </div>
     <div id="drawer-content-body"></div>
@@ -370,20 +394,21 @@
 </div>
 
 <script>
-  // DOMAINS LIST
-  const DOMAINS = [
-    "Todos", "Recursos Humanos", "Financeiro e Contábil", "Operacional", "Estratégico",
+  const ALL_DOMAINS = [
+    "Recursos Humanos", "Financeiro e Contábil", "Operacional", "Estratégico",
     "Legal e Compliance", "Marketing e Comercial", "Dados e Sistemas",
     "Pesquisa e Desenvolvimento", "Qualidade", "Comunicação Interna"
   ];
 
   const DOMAIN_ICONS = {
-    "Todos": "🏢", "Recursos Humanos": "👥", "Financeiro e Contábil": "💰", "Operacional": "⚙️",
+    "Recursos Humanos": "👥", "Financeiro e Contábil": "💰", "Operacional": "⚙️",
     "Estratégico": "🎯", "Legal e Compliance": "⚖️", "Marketing e Comercial": "📈",
-    "Dados e Sistemas": "💾", "Pesquisa e Desenvolvimento": "🧪", "Qualidade": "🏅", "Comunicação Interna": "📢"
+    "Dados e Sistemas": "💾", "Pesquisa e Desenvolvimento": "🧪", "Qualidade": "🏅", "Comunicação Interna": "📢",
+    "Administrador": "🔑"
   };
 
-  // INITIAL CORPORATE SAMPLE DOCUMENTS (ALL 8 FORMATS, 10 DOMAINS)
+  let currentUserDepartment = "Recursos Humanos";
+
   let documentsDB = [
     {
       id: "doc_1", filename: "RH_Politica_Beneficios_HomeOffice.docx", doc_type: "Word", domain: "Recursos Humanos", word_count: 142,
@@ -427,60 +452,44 @@
     }
   ];
 
-  let selectedDomain = "Todos";
-  let isDarkTheme = true;
-
-  // INITIALIZE UI
   function initApp() {
     renderSidebarDomains();
     renderDocumentsGrid();
     updateMetrics();
   }
 
-  function toggleTheme() {
-    isDarkTheme = !isDarkTheme;
-    document.documentElement.className = isDarkTheme ? "dark" : "light";
-    document.getElementById("theme-icon").innerText = isDarkTheme ? "🌙" : "☀️";
-    document.getElementById("theme-label").innerText = isDarkTheme ? "Escuro" : "Claro";
+  function changeUserDepartment(newDept) {
+    currentUserDepartment = newDept;
+    document.getElementById("welcome-message-text").innerHTML = 
+      `Olá! Sou o **Nexus AI**, o Chatbot corporativo. Você está conectado como colaborador do setor de **${currentUserDepartment}**.`;
+    renderSidebarDomains();
+    renderDocumentsGrid();
+    
+    appendMessage("agent", `🔄 **Perfil de Acesso Atualizado**: Você agora está navegando como **${currentUserDepartment}**. As consultas do Chatbot e os documentos exibidos foram ajustados para as suas permissões de setor.`);
   }
 
   function renderSidebarDomains() {
     const container = document.getElementById("domain-list-container");
     container.innerHTML = "";
 
-    DOMAINS.forEach(dom => {
-      const count = dom === "Todos" 
-        ? documentsDB.length 
-        : documentsDB.filter(d => d.domain === dom).length;
+    ALL_DOMAINS.forEach(dom => {
+      const isAllowed = currentUserDepartment === "Administrador" || 
+                        dom === currentUserDepartment || 
+                        dom === "Comunicação Interna";
+
+      const count = documentsDB.filter(d => d.domain === dom).length;
 
       const btn = document.createElement("button");
-      btn.className = `domain-btn ${selectedDomain === dom ? 'active' : ''}`;
-      btn.onclick = () => selectDomain(dom);
+      btn.className = `domain-btn ${currentUserDepartment === dom ? 'active' : ''} ${!isAllowed ? 'locked' : ''}`;
       btn.innerHTML = `
         <div style="display:flex; align-items:center; gap:0.5rem;">
           <span>${DOMAIN_ICONS[dom] || '📁'}</span>
           <span>${dom}</span>
         </div>
-        <span class="count-tag">${count}</span>
+        <span>${isAllowed ? `<span class="count-tag">${count}</span>` : '🔒'}</span>
       `;
       container.appendChild(btn);
     });
-  }
-
-  function selectDomain(domain) {
-    selectedDomain = domain;
-    renderSidebarDomains();
-    renderDocumentsGrid();
-  }
-
-  function switchTab(tabName) {
-    document.getElementById("tab-chat-btn").className = `tab-btn ${tabName === 'chat' ? 'active' : ''}`;
-    document.getElementById("tab-docs-btn").className = `tab-btn ${tabName === 'docs' ? 'active' : ''}`;
-    document.getElementById("tab-oci-btn").className = `tab-btn ${tabName === 'oci' ? 'active' : ''}`;
-
-    document.getElementById("view-chat").style.display = tabName === 'chat' ? 'flex' : 'none';
-    document.getElementById("view-docs").style.display = tabName === 'docs' ? 'flex' : 'none';
-    document.getElementById("view-oci").style.display = tabName === 'oci' ? 'flex' : 'none';
   }
 
   function renderDocumentsGrid() {
@@ -488,18 +497,17 @@
     const filterText = document.getElementById("doc-search-filter") ? document.getElementById("doc-search-filter").value.toLowerCase() : "";
     container.innerHTML = "";
 
-    const filtered = documentsDB.filter(d => {
-      const matchDomain = selectedDomain === "Todos" || d.domain === selectedDomain;
-      const matchSearch = d.filename.toLowerCase().includes(filterText) || d.doc_type.toLowerCase().includes(filterText) || d.domain.toLowerCase().includes(filterText);
-      return matchDomain && matchSearch;
-    });
+    const allowedDocs = documentsDB.filter(d => {
+      if (currentUserDepartment === "Administrador") return true;
+      return d.domain === currentUserDepartment || d.domain === "Comunicação Interna";
+    }).filter(d => d.filename.toLowerCase().includes(filterText) || d.doc_type.toLowerCase().includes(filterText));
 
     const fmtClasses = {
       "PDF": "fmt-pdf", "Word": "fmt-word", "Excel": "fmt-excel", "PowerPoint": "fmt-ppt",
       "Markdown": "fmt-md", "CSV": "fmt-csv", "JSON": "fmt-json", "HTML": "fmt-html"
     };
 
-    filtered.forEach(doc => {
+    allowedDocs.forEach(doc => {
       const card = document.createElement("div");
       card.className = "doc-card";
       card.onclick = () => openDrawer(doc);
@@ -511,16 +519,18 @@
         <div style="font-weight:700; font-size:0.95rem; color:var(--text-primary); margin:0.3rem 0;">📄 ${doc.filename}</div>
         <div class="doc-card-meta">
           <span>${doc.word_count} palavras</span>
-          <span>OCI Storage</span>
+          <span>Acesso Permitido</span>
         </div>
       `;
       container.appendChild(card);
     });
 
-    document.getElementById("doc-count-tag").innerText = documentsDB.length;
+    document.getElementById("doc-count-tag").innerText = allowedDocs.length;
+    document.getElementById("doc-sec-notice").innerText = currentUserDepartment === "Administrador"
+      ? "Exibindo todos os documentos (Modo Administrador)."
+      : `Exibindo apenas documentos do seu setor (${currentUserDepartment}) e Comunicação Interna.`;
   }
 
-  // RAG SEARCH ENGINE & QUERY SYNTHESIS
   function sendUserQuery() {
     const input = document.getElementById("chat-input-field");
     const text = input.value.trim();
@@ -534,16 +544,14 @@
     }, 400);
   }
 
-  function sendQuickQuery(text, domain) {
-    selectedDomain = domain;
-    renderSidebarDomains();
+  function sendQuickQuery(text) {
     appendMessage("user", text);
     setTimeout(() => {
       processRAGAnswer(text);
     }, 400);
   }
 
-  function appendMessage(sender, text, sources = []) {
+  function appendMessage(sender, text, sources = [], isDenied = false) {
     const container = document.getElementById("chat-messages-container");
     const msgDiv = document.createElement("div");
     msgDiv.className = `msg-row ${sender}`;
@@ -561,9 +569,9 @@
 
     msgDiv.innerHTML = `
       <div class="avatar ${sender}">${sender === 'agent' ? '🤖' : '👤'}</div>
-      <div class="msg-card">
+      <div class="msg-card ${isDenied ? 'denied' : ''}">
         <div class="msg-meta">
-          <span>${sender === 'agent' ? 'Nexus AI Agente Corporativo' : 'Você'}</span> • <span>${timeStr}</span>
+          <span>${sender === 'agent' ? 'Nexus AI Chatbot' : 'Você'}</span> • <span>${timeStr}</span>
         </div>
         <div style="white-space: pre-line;">${text}</div>
         ${sourcesHTML}
@@ -574,30 +582,59 @@
   }
 
   function processRAGAnswer(query) {
-    const terms = query.toLowerCase().split(/\s+/).filter(t => t.length > 2);
+    const queryLower = query.toLowerCase();
+    const terms = queryLower.split(/\s+/).filter(t => t.length > 2);
     
-    let scoredDocs = documentsDB.map(doc => {
+    // Check if query is targeting an unauthorized domain
+    let targetDomain = null;
+    let targetDoc = null;
+    
+    documentsDB.forEach(doc => {
+      const match = terms.some(t => doc.filename.toLowerCase().includes(t) || doc.content.toLowerCase().includes(t));
+      if (match) {
+        if (doc.domain !== currentUserDepartment && doc.domain !== "Comunicação Interna" && currentUserDepartment !== "Administrador") {
+          targetDomain = doc.domain;
+          targetDoc = doc;
+        }
+      }
+    });
+
+    // If query targets an unauthorized department, block access!
+    if (targetDomain && currentUserDepartment !== "Administrador") {
+      const securityRefusal = `🔒 **Acesso Negado por Política de Segurança (RBAC)**:\n\n` +
+        `Seu usuário está autenticado no setor **${currentUserDepartment}**, mas a informação solicitada pertence ao setor de **${targetDomain}** (Arquivo: *${targetDoc.filename}*).\n\n` +
+        ` Cada colaborador tem acesso exclusivo aos documentos do seu próprio departamento. Para consultar estas informações, solicite permissão ao gestor do setor de ${targetDomain}.`;
+      
+      appendMessage("agent", securityRefusal, [], true);
+      return;
+    }
+
+    // Filter allowed documents
+    const allowedDocs = documentsDB.filter(d => {
+      if (currentUserDepartment === "Administrador") return true;
+      return d.domain === currentUserDepartment || d.domain === "Comunicação Interna";
+    });
+
+    let scoredDocs = allowedDocs.map(doc => {
       let score = 0;
       const textLower = (doc.filename + " " + doc.content).toLowerCase();
       terms.forEach(t => {
         if (textLower.includes(t)) score += 1;
       });
-      if (selectedDomain !== "Todos" && doc.domain === selectedDomain) score += 2;
       return { doc, score };
     });
 
     scoredDocs.sort((a, b) => b.score - a.score);
     const bestMatches = scoredDocs.filter(m => m.score > 0).slice(0, 3).map(m => m.doc);
-    const topDoc = bestMatches.length > 0 ? bestMatches[0] : documentsDB[0];
+    const topDoc = bestMatches.length > 0 ? bestMatches[0] : allowedDocs[0];
 
-    const responseText = `Com base na documentação oficial da empresa (**${topDoc.filename}**, setor de **${topDoc.domain}**), encontrei as seguintes informações:\n\n` +
+    const responseText = `Com base na documentação autorizada do setor de **${topDoc.domain}** (Arquivo: **${topDoc.filename}**):\n\n` +
       `• ${topDoc.content.replace(/\n/g, "\n• ")}\n\n` +
-      `> 📌 **Fonte de Referência:** ${topDoc.filename} (Formato: ${topDoc.doc_type} | Setor: ${topDoc.domain})`;
+      `> 🛡️ **Acesso Restrito ao Setor:** ${currentUserDepartment} | 📌 **Fonte:** ${topDoc.filename} (${topDoc.doc_type})`;
 
     appendMessage("agent", responseText, bestMatches.length > 0 ? bestMatches : [topDoc]);
   }
 
-  // FILE UPLOAD HANDLER
   function handleFileUpload(event) {
     const files = event.target.files;
     if (!files || files.length === 0) return;
@@ -618,11 +655,13 @@
       else if (ext === "JSON") docType = "JSON";
       else if (ext === "HTML" || ext === "HTM") docType = "HTML";
 
+      const targetDomain = currentUserDepartment === "Administrador" ? "Operacional" : currentUserDepartment;
+
       const newDoc = {
         id: "doc_" + Date.now(),
         filename: file.name,
         doc_type: docType,
-        domain: selectedDomain === "Todos" ? "Operacional" : selectedDomain,
+        domain: targetDomain,
         word_count: textContent.split(/\s+/).length || 50,
         content: textContent || "Conteúdo do documento indexado no OCI Object Storage."
       };
@@ -631,7 +670,7 @@
       renderSidebarDomains();
       renderDocumentsGrid();
       updateMetrics();
-      alert(`✅ Documento '${file.name}' carregado e indexado com sucesso na Nuvem Oracle (OCI)!`);
+      alert(`✅ Documento '${file.name}' indexado com sucesso no setor ${targetDomain}!`);
     };
 
     reader.readAsText(file);
@@ -639,7 +678,6 @@
 
   function updateMetrics() {
     document.getElementById("oci-doc-metric").innerText = documentsDB.length;
-    document.getElementById("oci-chunk-metric").innerText = documentsDB.length * 3 + 2;
   }
 
   function openDrawer(doc) {
@@ -663,7 +701,7 @@
         </div>
       </div>
 
-      <div style="font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-bottom:0.5rem;">Conteúdo Extraído (RAG Chunk):</div>
+      <div style="font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-bottom:0.5rem;">Conteúdo Autorizado:</div>
       <div style="font-family:var(--font-mono); font-size:0.8rem; background:var(--bg-main); padding:1rem; border-radius:var(--radius-md); border:1px solid var(--border-subtle); white-space:pre-wrap; max-height:280px; overflow-y:auto;">
         ${doc.content}
       </div>
@@ -676,9 +714,23 @@
     document.getElementById("drawer-modal").classList.remove("open");
   }
 
-  // START APP
+  function toggleTheme() {
+    const isDark = document.documentElement.classList.toggle("light");
+    document.getElementById("theme-icon").innerText = isDark ? "☀️" : "🌙";
+    document.getElementById("theme-label").innerText = isDark ? "Claro" : "Escuro";
+  }
+
+  function switchTab(tabName) {
+    document.getElementById("tab-chat-btn").className = `tab-btn ${tabName === 'chat' ? 'active' : ''}`;
+    document.getElementById("tab-docs-btn").className = `tab-btn ${tabName === 'docs' ? 'active' : ''}`;
+    document.getElementById("tab-oci-btn").className = `tab-btn ${tabName === 'oci' ? 'active' : ''}`;
+
+    document.getElementById("view-chat").style.display = tabName === 'chat' ? 'flex' : 'none';
+    document.getElementById("view-docs").style.display = tabName === 'docs' ? 'flex' : 'none';
+    document.getElementById("view-oci").style.display = tabName === 'oci' ? 'flex' : 'none';
+  }
+
   window.onload = initApp;
 </script>
-
 </body>
 </html>

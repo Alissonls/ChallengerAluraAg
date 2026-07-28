@@ -26,7 +26,7 @@ app.add_middleware(
 
 class ChatQueryRequest(BaseModel):
     query: str
-    domain: Optional[str] = "Todos"
+    user_department: Optional[str] = "Recursos Humanos"
 
 @app.on_event("startup")
 def load_sample_documents():
@@ -63,12 +63,12 @@ def health_check():
 @app.get("/api/domains")
 def get_domains():
     """Retorna a lista de setores e departamentos corporativos disponíveis."""
-    return {"domains": ["Todos"] + DOMAINS}
+    return {"domains": DOMAINS + ["Administrador"]}
 
 @app.get("/api/documents")
-def list_documents():
-    """Retorna a lista de documentos corporativos indexados."""
-    return {"documents": rag_engine.get_documents_summary()}
+def list_documents(user_department: Optional[str] = "Administrador"):
+    """Retorna a lista de documentos corporativos permitidos para o setor do colaborador."""
+    return {"documents": rag_engine.get_documents_summary(user_department=user_department)}
 
 @app.get("/api/stats")
 def get_stats():
@@ -98,7 +98,6 @@ async def upload_document(file: UploadFile = File(...), domain: Optional[str] = 
             domain=domain if domain and domain != "Todos" else None
         )
         
-        # Sincroniza com o bucket do Oracle Cloud Object Storage
         oci_result = oci_service.sync_document_to_oci(filename, content_bytes)
         
         return {
@@ -114,12 +113,13 @@ async def upload_document(file: UploadFile = File(...), domain: Optional[str] = 
 
 @app.post("/api/chat")
 def chat_query(req: ChatQueryRequest):
-    """Consulta o agente de IA corporativo usando busca RAG e síntese semântica."""
+    """Consulta o agente de IA corporativo aplicando restrição de acesso por setor do usuário (RBAC)."""
     if not req.query.strip():
         raise HTTPException(status_code=400, detail="A pergunta não pode estar vazia.")
         
-    response = rag_engine.generate_answer(req.query, domain_filter=req.domain)
+    response = rag_engine.generate_answer(req.query, user_department=req.user_department)
     return response
+
 
 if __name__ == "__main__":
     import uvicorn
