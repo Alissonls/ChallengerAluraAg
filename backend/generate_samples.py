@@ -186,8 +186,3 @@ Expandir as equipes de P&D e Engenharia de IA no primeiro semestre, focando em p
 if __name__ == "__main__":
     create_sample_files()
     print("Documentos corporativos de exemplo gerados com sucesso!")
-ternas.")
-
-if __name__ == "__main__":
-    create_sample_files()
-    print("Sample corporate documents generated successfully!")
