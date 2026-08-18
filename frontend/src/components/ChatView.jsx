@@ -161,7 +161,7 @@ export default function ChatView({ userDepartment, onSelectCitation }) {
           <input
             type="text"
             className="chat-input-field"
-            placeholder={`Faça uma pergunta sobre documentos de ${selectedDomain}...`}
+            placeholder={`Faça uma pergunta sobre documentos de ${userDepartment}...`}
             value={inputQuery}
             onChange={(e) => setInputQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}

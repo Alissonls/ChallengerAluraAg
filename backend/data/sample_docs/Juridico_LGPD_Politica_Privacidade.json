@@ -1,0 +1,22 @@
+{
+  "documento": "Política de Privacidade e Conformidade LGPD",
+  "versao": "2.4",
+  "categoria": "Legal e Compliance",
+  "data_vigencia": "2026-01-15",
+  "encarregado_dpo": {
+    "nome": "Dra. Renata Vasconcelos",
+    "email": "dpo@nexusenterprise.com.br",
+    "telefone": "+55 11 3000-8800"
+  },
+  "principios_fundamentais": [
+    "Finalidade legítima e específica para cada tratamento de dados pessoais.",
+    "Limitação da coleta ao mínimo necessário para execução dos contratos.",
+    "Garantia de livre acesso e transparência aos titulares dos dados.",
+    "Criptografia ponta a ponta (AES-256) em armazenamento OCI Object Storage."
+  ],
+  "politica_retencao": {
+    "dados_cadastrais": "5 anos após o encerramento do contrato",
+    "logs_acesso_agente_ia": "180 dias conforme Marco Civil da Internet",
+    "curriculos_rh": "12 meses com consentimento expresso"
+  }
+}

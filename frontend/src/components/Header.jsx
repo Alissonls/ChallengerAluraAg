@@ -61,8 +61,8 @@ export default function Header({ isDark, toggleTheme, userDepartment, onChangeDe
             borderRadius: 'var(--radius-md)',
             cursor: 'pointer',
             display: 'flex',
-            align-items: 'center',
-            justify-content: 'center'
+            alignItems: 'center',
+            justifyContent: 'center'
           }}
           title={isDark ? "Alternar para Modo Claro" : "Alternar para Modo Escuro"}
         >

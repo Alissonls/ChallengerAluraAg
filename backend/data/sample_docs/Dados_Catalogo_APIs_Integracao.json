@@ -1,0 +1,33 @@
+{
+  "catalogo": "Catálogo de APIs e Microsserviços Corporativos",
+  "categoria": "Dados e Sistemas",
+  "ambiente_nuvem": "Oracle Cloud Infrastructure (OCI)",
+  "endpoints": [
+    {
+      "nome": "API de Ingestão de Documentos",
+      "path": "/api/v1/documents/upload",
+      "metodo": "POST",
+      "formatos_suportados": [
+        "PDF",
+        "Word",
+        "Excel",
+        "PowerPoint",
+        "Markdown",
+        "CSV",
+        "JSON",
+        "HTML"
+      ],
+      "autenticacao": "Bearer OAuth2 / OCI IAM Token"
+    },
+    {
+      "nome": "API de RAG & Consulta de Agente",
+      "path": "/api/v1/chat/query",
+      "metodo": "POST",
+      "payload_exemplo": {
+        "query": "Qual a política de reembolso de viagens?",
+        "domain": "Financeiro e Contábil"
+      },
+      "tempo_resposta_esperado": "< 500ms"
+    }
+  ]
+}

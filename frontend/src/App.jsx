@@ -79,6 +79,8 @@ export default function App() {
       <Header 
         isDark={isDark} 
         toggleTheme={toggleTheme} 
+        userDepartment={selectedDomain}
+        onChangeDepartment={setSelectedDomain}
         ociStatus={ociStatus}
         stats={stats}
       />
@@ -122,7 +124,7 @@ export default function App() {
 
           {activeTab === 'chat' && (
             <ChatView 
-              selectedDomain={selectedDomain} 
+              userDepartment={selectedDomain} 
               onSelectCitation={(citation) => setInspectedItem(citation)}
             />
           )}

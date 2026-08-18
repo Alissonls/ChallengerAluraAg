@@ -1,0 +1,4 @@
+Manual de Procedimentos Operacionais de TI
+Categoria: Operacional
+Código: MAN-TI-001
+Procedimento em caso de falha no servidor: Notificar equipe DevOps em #ti-incidentes no Slack. O tempo máximo de resposta para severidade 1 é 15 minutos.
